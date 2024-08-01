@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видео плеер Video.js</title>
+    <link href="https://vjs.zencdn.net/7.14.3/video-js.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+        .video-container {
+            width: 480px;
+            height: 854px;
+            position: relative;
+        }
+        .video-js {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="my-video" class="video-js" autoplay muted preload="auto" data-setup="{}">
+            <source src="video1.mp4" type="video/mp4" />
+            Ваш браузер не поддерживает видео.
+        </video>
+    </div>
+    <script src="https://vjs.zencdn.net/7.14.3/video.js"></script>
+    <script>
+        const videoList = ['video1.mp4', 'video2.mp4', 'video3.mp4']; // Список ваших видео
+        let currentVideoIndex = 0;
+
+        const videoElement = document.getElementById('my-video');
+        const videoContainer = document.querySelector('.video-container');
+
+        // Функция для загрузки и воспроизведения видео
+        function loadVideo(index) {
+            videoElement.pause();
+            videoElement.src = videoList[index];
+            videoElement.load();
+            videoElement.play().catch(error => {
+                console.error('Error playing video:', error);
+            });
+        }
+
+        // Автовоспроизведение при открытии страницы
+        window.onload = () => {
+            loadVideo(currentVideoIndex);
+        };
+
+        // Обработка свайпов на мобильных устройствах
+        let startY = 0;
+
+        videoContainer.addEventListener('touchstart', (event) => {
+            startY = event.touches[0].clientY;
+        });
+
+        videoContainer.addEventListener('touchend', (event) => {
+            let endY = event.changedTouches[0].clientY;
+            let deltaY = startY - endY;
+
+            if (deltaY > 50) { // Свайп вверх
+                if (currentVideoIndex < videoList.length - 1) {
+                    currentVideoIndex++;
+                    loadVideo(currentVideoIndex);
+                }
+            } else if (deltaY < -50) { // Свайп вниз
+                if (currentVideoIndex > 0) {
+                    currentVideoIndex--;
+                    loadVideo(currentVideoIndex);
+                }
+            }
+        });
+
+        // Обработка свайпов мышкой
+        let mouseStartY = 0;
+        let isMouseDown = false;
+
+        videoContainer.addEventListener('mousedown', (event) => {
+            mouseStartY = event.clientY;
+            isMouseDown = true;
+        });
+
+        videoContainer.addEventListener('mousemove', (event) => {
+            if (!isMouseDown) return;
+            let mouseEndY = event.clientY;
+            let mouseDeltaY = mouseStartY - mouseEndY;
+
+            if (mouseDeltaY > 50) { // Свайп вверх
+                if (currentVideoIndex < videoList.length - 1) {
+                    currentVideoIndex++;
+                    loadVideo(currentVideoIndex);
+                    isMouseDown = false;
+                }
+            } else if (mouseDeltaY < -50) { // Свайп вниз
+                if (currentVideoIndex > 0) {
+                    currentVideoIndex--;
+                    loadVideo(currentVideoIndex);
+                    isMouseDown = false;
+                }
+            }
+        });
+
+        videoContainer.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+
+        videoContainer.addEventListener('mouseleave', () => {
+            isMouseDown = false;
+        });
+
+        videoElement.addEventListener('ended', () => {
+            if (currentVideoIndex < videoList.length - 1) {
+                currentVideoIndex++;
+                loadVideo(currentVideoIndex);
+            }
+        });
+    </script>
+</body>
+</html>
